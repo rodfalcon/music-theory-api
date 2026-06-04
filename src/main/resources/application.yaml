@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: music-theory-api
+
+server:
+  port: 8080

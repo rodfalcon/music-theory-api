@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### React frontend ###
+music_streaming-entertainment-modern_react/node_modules/
+music_streaming-entertainment-modern_react/.cache/
+music_streaming-entertainment-modern_react/build/

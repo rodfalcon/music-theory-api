@@ -38,6 +38,12 @@ public class MusicTheoryController {
         return musicTheoryService.getScales(root, type);
     }
 
+    @GetMapping("/scale/{root}/{type}")
+    public ScaleResponse getScale(@PathVariable String root, @PathVariable String type) {
+        log.info("GET /scale/{}/{}", root, type);
+        return musicTheoryService.getScale(root, type);
+    }
+
     @GetMapping("/keys/{key}")
     public KeyResponse getKeys(@PathVariable String key) {
         log.info("GET /keys/{}", key);

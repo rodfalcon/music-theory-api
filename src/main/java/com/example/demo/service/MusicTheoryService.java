@@ -62,6 +62,19 @@ public class MusicTheoryService {
         return new KeyResponse(key, scale.notes().stream().map(Note::getSymbol).toList());
     }
 
+    // Returns the notes of a specific scale — root + mode.
+    // e.g. getScale("D", "Dorian") → D E F G A B C
+    public ScaleResponse getScale(String root, String scaleType) {
+        Note rootNote = Note.fromString(root);
+        ScaleType type = ScaleType.fromString(scaleType);
+        Scale scale = new Scale(rootNote, type);
+        return new ScaleResponse(
+            rootNote.getSymbol(),
+            type.getDisplayName(),
+            scale.notes().stream().map(Note::getSymbol).toList()
+        );
+    }
+
     // Given a chord symbol, finds all compatible scales and wraps them in a single response.
     // ImproveResponse bundles the original symbol + the scale list so the client has full context.
     public ImproveResponse improvise(ImproveRequest improveRequest) {

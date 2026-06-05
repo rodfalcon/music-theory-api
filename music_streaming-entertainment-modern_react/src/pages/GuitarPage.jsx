@@ -34,7 +34,7 @@ export const GuitarPage = () => {
       setError(null);
       try {
         const res = await fetch(
-          `http://localhost:8081/api/scale/${encodeURIComponent(selectedKey)}/${selectedScale}`
+          `/api/scale/${encodeURIComponent(selectedKey)}/${selectedScale}`
         );
         if (!res.ok) throw new Error(`API returned ${res.status}`);
         // Response: { root: "C", type: "Ionian", notes: ["C","D","E","F","G","A","B"] }

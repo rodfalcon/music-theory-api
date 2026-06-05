@@ -32,6 +32,10 @@ build/
 ### VS Code ###
 .vscode/
 
+### Secrets ###
+.env
+!.env.example
+
 ### React frontend ###
 music_streaming-entertainment-modern_react/node_modules/
 music_streaming-entertainment-modern_react/.cache/

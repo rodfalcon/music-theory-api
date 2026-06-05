@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: music-theory-ui
+  namespace: music-theory
+  labels:
+    app: music-theory-ui
+    tags.datadoghq.com/env: "k8s"
+    tags.datadoghq.com/service: "music-theory-ui"
+    tags.datadoghq.com/version: "0.1.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: music-theory-ui
+  template:
+    metadata:
+      labels:
+        app: music-theory-ui
+        tags.datadoghq.com/env: "k8s"
+        tags.datadoghq.com/service: "music-theory-ui"
+        tags.datadoghq.com/version: "0.1.0"
+      annotations:
+        ad.datadoghq.com/music-theory-ui.logs: '[{"source":"nginx","service":"music-theory-ui"}]'
+    spec:
+      containers:
+        - name: music-theory-ui
+          image: music-theory-ui:0.1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"

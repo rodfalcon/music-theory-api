@@ -33,7 +33,7 @@ export const PianoPage = () => {
       setError(null);
       try {
         const res = await fetch(
-          `http://localhost:8081/api/scale/${encodeURIComponent(selectedKey)}/${selectedScale}`
+          `/api/scale/${encodeURIComponent(selectedKey)}/${selectedScale}`
         );
         if (!res.ok) throw new Error(`API returned ${res.status}`);
         const data = await res.json();

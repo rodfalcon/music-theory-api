@@ -1,0 +1,38 @@
+services:
+
+  # ── Spring Boot Backend ───────────────────────────────────────────────────────
+  backend:
+    build: .
+    container_name: music-theory-api
+    ports:
+      - "8081:8081"
+    environment:
+      # Unified Service Tagging — version 0.1.0, env docker
+      - DD_SERVICE=music-theory-api
+      - DD_ENV=docker
+      - DD_VERSION=0.1.0
+      - DD_LOGS_INJECTION=true         # injects dd.trace_id + dd.span_id into every log line
+      # host.docker.internal resolves to the Mac host — reaches your existing DD Agent on localhost:8126
+      - DD_AGENT_HOST=host.docker.internal
+      - DD_TRACE_AGENT_PORT=8126
+    labels:
+      tags.datadoghq.com/env: "docker"
+      tags.datadoghq.com/service: "music-theory-api"
+      tags.datadoghq.com/version: "0.1.0"
+      com.datadoghq.ad.logs: '[{"source":"java","service":"music-theory-api"}]'
+
+  # ── React Frontend (nginx) ────────────────────────────────────────────────────
+  frontend:
+    build: ./music_streaming-entertainment-modern_react
+    container_name: music-theory-ui
+    ports:
+      - "3000:80"
+    labels:
+      tags.datadoghq.com/env: "docker"
+      tags.datadoghq.com/service: "music-theory-ui"
+      tags.datadoghq.com/version: "0.1.0"
+      # source:nginx triggers nginx access/error log parsing in DD
+      com.datadoghq.ad.logs: '[{"source":"nginx","service":"music-theory-ui"}]'
+    depends_on:
+      backend:
+        condition: service_started

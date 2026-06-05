@@ -1,0 +1,6 @@
+music_streaming-entertainment-modern_react/
+target/
+.git/
+.env
+*.md
+.gitignore

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: music-theory-api
+  namespace: music-theory
+  labels:
+    app: music-theory-api
+    tags.datadoghq.com/env: "k8s"
+    tags.datadoghq.com/service: "music-theory-api"
+    tags.datadoghq.com/version: "0.1.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: music-theory-api
+  template:
+    metadata:
+      labels:
+        app: music-theory-api
+        tags.datadoghq.com/env: "k8s"
+        tags.datadoghq.com/service: "music-theory-api"
+        tags.datadoghq.com/version: "0.1.0"
+      annotations:
+        # Tells the DD Operator to inject the Java tracer via SSI — sets JAVA_TOOL_OPTIONS automatically.
+        # Without this, the Operator injects JS/dotnet init containers but skips Java.
+        admission.datadoghq.com/java-lib.version: "latest"
+        # Autodiscovery: DD Agent collects logs from this pod.
+        ad.datadoghq.com/music-theory-api.logs: '[{"source":"java","service":"music-theory-api"}]'
+    spec:
+      containers:
+        - name: music-theory-api
+          image: music-theory-api:0.1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8081
+          env:
+            - name: DD_SERVICE
+              value: "music-theory-api"
+            - name: DD_ENV
+              value: "k8s"
+            - name: DD_VERSION
+              value: "0.1.0"
+            - name: DD_LOGS_INJECTION
+              value: "true"
+            # In K8s the DD Agent runs as a DaemonSet — each pod reaches it via the node IP
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: DD_TRACE_AGENT_PORT
+              value: "8126"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

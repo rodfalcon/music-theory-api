@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { DEGREE_COLORS } from '../constants/degreeColors';
 
 // Chromatic note names indexed by semitone (0 = C)
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -12,6 +13,7 @@ const OPEN_STRINGS = [
   { label: 'A', midi: 45 },  // A2
   { label: 'E', midi: 40 },  // E2
 ];
+
 
 // Fret marker positions (dots on the fretboard body)
 const SINGLE_MARKERS = [3, 5, 7, 9, 15, 17, 19, 21];
@@ -191,8 +193,8 @@ export const Fretboard = ({
                 cx={x}
                 cy={y}
                 r={DOT_R}
-                fill={highlighted ? '#1db954' : 'transparent'}
-                stroke={selected ? 'white' : highlighted ? '#1db954' : 'rgba(255,255,255,0.12)'}
+                fill={highlighted ? DEGREE_COLORS[highlightedNotes.indexOf(note)] : 'transparent'}
+                stroke={selected ? 'white' : highlighted ? DEGREE_COLORS[highlightedNotes.indexOf(note)] : 'rgba(255,255,255,0.12)'}
                 strokeWidth={selected ? 2 : 1}
                 className="transition-all duration-150 hover:stroke-white/50"
               />

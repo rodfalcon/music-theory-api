@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { DEGREE_COLORS } from '../constants/degreeColors';
 
 // Natural (unscaled) white key dimensions
 const BASE_W = 40;
@@ -7,6 +8,7 @@ const BW = 23;   // black key width (~58% of white key)
 const BH = 100;  // black key height
 
 const OCTAVES = [2, 3, 4, 5, 6, 7, 8]; // C2 → B8
+
 
 const WHITE_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 
@@ -60,51 +62,57 @@ export const PianoKeyboard = ({ onKeyClick, highlightedNotes = [], zoom = 0.5 })
         height={(WH + 2) * zoom}
       >
         {/* White keys rendered first so black keys appear on top */}
-        {whiteKeys.map(({ note, octave, x }) => (
-          <g key={`${note}${octave}`} onClick={() => onKeyClick(note, octave)} className="cursor-pointer">
-            <rect
-              x={x + 1}
-              y={1}
-              width={BASE_W - 2}
-              height={WH}
-              rx={3}
-              fill={isHighlighted(note) ? '#1db954' : 'white'}
-              stroke="#333"
-              strokeWidth={1}
-              className="transition-colors duration-150 hover:opacity-80"
-            />
-            {/* Only label C keys — marks each octave boundary */}
-            {note === 'C' && (
-              <text
-                x={x + BASE_W / 2}
-                y={WH - 8}
-                textAnchor="middle"
-                fontSize="10"
-                fill={isHighlighted(note) ? '#000' : '#888'}
-                className="pointer-events-none select-none"
-              >
-                C{octave}
-              </text>
-            )}
-          </g>
-        ))}
+        {whiteKeys.map(({ note, octave, x }) => {
+          const degreeColor = DEGREE_COLORS[highlightedNotes.indexOf(note)];
+          return (
+            <g key={`${note}${octave}`} onClick={() => onKeyClick(note, octave)} className="cursor-pointer">
+              <rect
+                x={x + 1}
+                y={1}
+                width={BASE_W - 2}
+                height={WH}
+                rx={3}
+                fill={isHighlighted(note) ? degreeColor : 'white'}
+                stroke="#333"
+                strokeWidth={1}
+                className="transition-colors duration-150 hover:opacity-80"
+              />
+              {/* Only label C keys — marks each octave boundary */}
+              {note === 'C' && (
+                <text
+                  x={x + BASE_W / 2}
+                  y={WH - 8}
+                  textAnchor="middle"
+                  fontSize="10"
+                  fill={isHighlighted(note) ? '#000' : '#888'}
+                  className="pointer-events-none select-none"
+                >
+                  C{octave}
+                </text>
+              )}
+            </g>
+          );
+        })}
 
         {/* Black keys rendered on top of white keys */}
-        {blackKeys.map(({ note, octave, x }) => (
-          <g key={`${note}${octave}`} onClick={() => onKeyClick(note, octave)} className="cursor-pointer">
-            <rect
-              x={x}
-              y={1}
-              width={BW}
-              height={BH}
-              rx={3}
-              fill={isHighlighted(note) ? '#1db954' : '#111'}
-              stroke="#000"
-              strokeWidth={1}
-              className="transition-colors duration-150 hover:opacity-70"
-            />
-          </g>
-        ))}
+        {blackKeys.map(({ note, octave, x }) => {
+          const degreeColor = DEGREE_COLORS[highlightedNotes.indexOf(note)];
+          return (
+            <g key={`${note}${octave}`} onClick={() => onKeyClick(note, octave)} className="cursor-pointer">
+              <rect
+                x={x}
+                y={1}
+                width={BW}
+                height={BH}
+                rx={3}
+                fill={isHighlighted(note) ? degreeColor : '#111'}
+                stroke="#000"
+                strokeWidth={1}
+                className="transition-colors duration-150 hover:opacity-70"
+              />
+            </g>
+          );
+        })}
       </svg>
     </div>
   );

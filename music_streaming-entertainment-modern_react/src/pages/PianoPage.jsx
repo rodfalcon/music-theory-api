@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PianoKeyboard } from '../components/PianoKeyboard';
+import { ScaleLegend } from '../components/ScaleLegend';
 import { usePianoSampler } from '../hooks/usePianoSampler';
 
 const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -118,8 +119,11 @@ export const PianoPage = () => {
 
         {/* Active scale summary */}
         <p className="text-primary font-bold text-lg tracking-wide">
-          {loading ? 'Loading…' : error ? '' : `${selectedKey} ${scaleLabel} — ${scaleNotes.join('  ·  ')}`}
+          {loading ? 'Loading…' : error ? '' : `${selectedKey} ${scaleLabel}`}
         </p>
+
+        {/* Degree colour legend */}
+        {!loading && !error && <ScaleLegend scaleNotes={scaleNotes} />}
 
         {/* Zoom slider */}
         <div className="flex items-center justify-center gap-3 text-textMuted text-sm">

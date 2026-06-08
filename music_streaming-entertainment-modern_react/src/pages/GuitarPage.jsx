@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Fretboard } from '../components/Fretboard';
+import { ScaleLegend } from '../components/ScaleLegend';
 import { usePianoSampler } from '../hooks/usePianoSampler';
 
 const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -121,8 +122,11 @@ export const GuitarPage = () => {
 
         {/* Active scale summary */}
         <p className="text-primary font-bold text-lg tracking-wide">
-          {loading ? 'Loading…' : error ? '' : `${selectedKey} ${scaleLabel} — ${scaleNotes.join('  ·  ')}`}
+          {loading ? 'Loading…' : error ? '' : `${selectedKey} ${scaleLabel}`}
         </p>
+
+        {/* Degree colour legend */}
+        {!loading && !error && <ScaleLegend scaleNotes={scaleNotes} />}
 
         {/* Zoom slider */}
         <div className="flex items-center justify-center gap-3 text-textMuted text-sm">

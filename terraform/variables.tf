@@ -27,3 +27,9 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "datadog_password" {
+  description = "Password for the RDS datadog monitoring user (DBM)"
+  type        = string
+  sensitive   = true
+}

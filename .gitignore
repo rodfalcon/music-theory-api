@@ -36,6 +36,13 @@ build/
 .env
 !.env.example
 
+### Terraform ###
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/*.tfvars.backup
+terraform/crash.log
+
 ### React frontend ###
 music_streaming-entertainment-modern_react/node_modules/
 music_streaming-entertainment-modern_react/.cache/

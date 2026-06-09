@@ -8,6 +8,7 @@ import './styles/globals.css';
 import { IndexPage } from './pages/IndexPage';
 import { GuitarPage } from './pages/GuitarPage';
 import { PianoPage } from './pages/PianoPage';
+import { ProgressionsPage } from './pages/ProgressionsPage';
 
 // Layout wraps every route so ScrollToTop fires on every navigation
 const Layout = () => (
@@ -23,8 +24,9 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: '/',       element: <IndexPage /> },
-      { path: '/guitar', element: <GuitarPage /> },
-      { path: '/piano',  element: <PianoPage /> },
+      { path: '/guitar',       element: <GuitarPage /> },
+      { path: '/piano',        element: <PianoPage /> },
+      { path: '/progressions', element: <ProgressionsPage /> },
     ],
   },
 ]);

@@ -10,6 +10,7 @@ RUN mvn clean package -DskipTests --no-transfer-progress
 # Manual -javaagent used here because the cluster SSI is configured for dotnet/js only.
 # To remove this, add Java to the DatadogAgent CR's instrumentation target.
 FROM eclipse-temurin:21-jre-alpine
+RUN apk add --no-cache curl
 WORKDIR /app
 COPY --from=build /app/target/*.jar             app.jar
 COPY --from=build /app/target/dd-java-agent.jar dd-java-agent.jar

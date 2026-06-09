@@ -80,6 +80,53 @@ resource "aws_cloudwatch_log_group" "dd_agent" {
   retention_in_days = 7
 }
 
+# --- DBM Migration Task Definition ---
+# One-off Fargate task: run `make dbm-migrate` after initial deploy.
+# Uses the backend SG so it can reach RDS without any public exposure.
+
+resource "aws_cloudwatch_log_group" "migrate" {
+  name              = "/ecs/${local.name_prefix}/migrate"
+  retention_in_days = 7
+}
+
+resource "aws_ecs_task_definition" "migrate" {
+  family                   = "${local.name_prefix}-migrate"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.task_execution.arn
+
+  container_definitions = jsonencode([{
+    name      = "migrate"
+    image     = "postgres:16-alpine"
+    essential = true
+
+    environment = [
+      { name = "PGHOST",     value = aws_db_instance.main.address },
+      { name = "PGPORT",     value = "5432" },
+      { name = "PGUSER",     value = "noteflow" },
+      { name = "PGDATABASE", value = "noteflow" },
+    ]
+
+    secrets = [
+      { name = "PGPASSWORD",    valueFrom = aws_ssm_parameter.db_password.arn },
+      { name = "DD_PGPASSWORD", valueFrom = aws_ssm_parameter.datadog_password.arn },
+    ]
+
+    command = ["/bin/sh", "-c", local.dbm_setup_script]
+
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-group         = "/ecs/${local.name_prefix}/migrate"
+        awslogs-region        = var.aws_region
+        awslogs-stream-prefix = "migrate"
+      }
+    }
+  }])
+}
+
 # --- Backend Task Definition ---
 # Containers: Spring Boot app + Datadog agent sidecar + Kafka sidecar
 
@@ -156,6 +203,7 @@ resource "aws_ecs_task_definition" "backend" {
 
       secrets = [
         { name = "DD_API_KEY", valueFrom = aws_ssm_parameter.dd_api_key.arn },
+        { name = "DD_CHECKS", valueFrom = aws_ssm_parameter.dd_checks.arn },
       ]
 
       logConfiguration = {

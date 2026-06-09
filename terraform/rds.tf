@@ -42,3 +42,30 @@ resource "aws_ssm_parameter" "dd_api_key" {
   type  = "SecureString"
   value = var.dd_api_key
 }
+
+resource "aws_ssm_parameter" "datadog_password" {
+  name  = "/noteflow/datadog_password"
+  type  = "SecureString"
+  value = var.datadog_password
+}
+
+# Full postgres check config injected into the DD agent via DD_CHECKS env var.
+# Password is stored here so it never appears as plaintext in the task definition.
+resource "aws_ssm_parameter" "dd_checks" {
+  name = "/noteflow/dd_checks"
+  type = "SecureString"
+  value = jsonencode({
+    postgres = {
+      instances = [{
+        host              = aws_db_instance.main.address
+        port              = 5432
+        username          = "datadog"
+        password          = var.datadog_password
+        dbm               = true
+        reported_hostname = "noteflow-postgres"
+        query_samples     = { enabled = true }
+        query_metrics     = { enabled = true }
+      }]
+    }
+  })
+}

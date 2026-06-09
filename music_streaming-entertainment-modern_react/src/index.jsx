@@ -10,7 +10,7 @@ datadogRum.init({
   clientToken:             'pubb23c5ab1af33f76a224718c68a1ebd97',
   site:                    'datadoghq.com',
   service:                 'music-theory-ui',
-  env:                     'k8s',
+  env:                     process.env.REACT_APP_DD_ENV || 'k8s',
   version:                 '0.1.0',
   sessionSampleRate:       100,
   sessionReplaySampleRate: 20,

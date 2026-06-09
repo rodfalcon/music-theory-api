@@ -1,6 +1,17 @@
 spring:
   application:
     name: music-theory-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/noteflow}
+    username: ${SPRING_DATASOURCE_USERNAME:noteflow}
+    password: ${SPRING_DATASOURCE_PASSWORD:noteflow}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   kafka:
     bootstrap-servers: kafka:9092
     producer:

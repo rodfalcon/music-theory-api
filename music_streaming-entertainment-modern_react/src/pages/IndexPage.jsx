@@ -65,7 +65,7 @@ export const IndexPage = () => {
             </div>
 
             {/* Instrument Cards */}
-            <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
 
               {/* Guitar Card */}
               <div
@@ -110,6 +110,32 @@ export const IndexPage = () => {
                   <div>
                     <h3 className="font-display font-bold text-2xl mb-1">Piano</h3>
                     <p className="text-textMuted text-sm">Keys · Scales · Chords</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                    <Icon className="w-5 h-5 group-hover:text-black transition-colors" viewBox="0 0 24 24" fill="none">
+                      <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    </Icon>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progressions Card */}
+              <div
+                onClick={() => navigate('/progressions')}
+                className="group cursor-pointer glass-panel rounded-3xl overflow-hidden relative hover:scale-[1.03] transition-all duration-300 hover:shadow-[0_0_40px_rgba(29,185,84,0.2)]"
+              >
+                <div className="relative h-72 overflow-hidden">
+                  <img
+                    src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=800&q=80"
+                    alt="Chord Progressions"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                </div>
+                <div className="p-6 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-display font-bold text-2xl mb-1">Progressions</h3>
+                    <p className="text-textMuted text-sm">Chords · Metronome · Playback</p>
                   </div>
                   <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all duration-300">
                     <Icon className="w-5 h-5 group-hover:text-black transition-colors" viewBox="0 0 24 24" fill="none">

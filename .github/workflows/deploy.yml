@@ -3,6 +3,10 @@ name: Deploy NoteFlow
 on:
   push:
     branches: [master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'images/**'
   workflow_dispatch:
 
 permissions:

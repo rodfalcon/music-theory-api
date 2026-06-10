@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.model.ChordDetail;
 import com.example.demo.model.ChordProgression;
 import com.example.demo.service.ChordProgressionService;
 import org.springframework.web.bind.annotation.*;
@@ -18,5 +19,10 @@ public class ChordProgressionController {
     @GetMapping
     public ChordProgression getProgression(@RequestParam String key, @RequestParam(defaultValue = "major") String mode) {
         return chordProgressionService.generateProgression(key, mode);
+    }
+
+    @GetMapping("/chord/{symbol}")
+    public ChordDetail getChordDetail(@PathVariable String symbol) {
+        return chordProgressionService.getChordDetail(symbol);
     }
 }

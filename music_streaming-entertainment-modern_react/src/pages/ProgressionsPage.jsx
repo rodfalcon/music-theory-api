@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as Tone from 'tone';
+import { PianoKeyboard } from '../components/PianoKeyboard';
+import { Fretboard } from '../components/Fretboard';
 
 const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const CHROMATIC = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -54,6 +56,9 @@ export const ProgressionsPage = () => {
   const [currentBeat, setCurrentBeat]         = useState(-1);
   const [isPlaying, setIsPlaying]             = useState(false);
   const [bpm, setBpm]                         = useState(100);
+
+  const [chordDetail, setChordDetail]         = useState(null);
+  const [detailView, setDetailView]           = useState('piano'); // 'piano' | 'guitar'
 
   const samplerRef = useRef(null);
   const seqRef     = useRef(null);
@@ -139,6 +144,20 @@ export const ProgressionsPage = () => {
     setIsPlaying(true);
     setActiveProgIdx(progIdx);
   }, [bpm, progressions, samplerLoaded, stopTransport]);
+
+  const handleChordClick = useCallback(async (chord) => {
+    if (chordDetail?.symbol === chord) {
+      setChordDetail(null);
+      return;
+    }
+    try {
+      const res = await fetch(`/api/progressions/chord/${encodeURIComponent(chord)}`);
+      if (!res.ok) throw new Error();
+      setChordDetail(await res.json());
+    } catch {
+      // silently ignore — chord detail is optional
+    }
+  }, [chordDetail]);
 
   const handleCardClick = (idx) => {
     if (isPlaying && activeProgIdx === idx) {
@@ -262,22 +281,29 @@ export const ProgressionsPage = () => {
                     </div>
                   </div>
 
-                  {/* Chord chips */}
+                  {/* Chord chips — click any chord to see its notes */}
                   <div className="flex flex-wrap gap-2">
-                    {prog.chords.map((chord, chordIdx) => (
-                      <span
-                        key={chordIdx}
-                        className={`px-3 py-1 rounded-full text-sm font-bold transition-all duration-100 ${
-                          isThisBeat && currentChordIdx === chordIdx
-                            ? 'bg-primary text-black scale-110'
-                            : isActive
-                            ? 'bg-primary/20 text-primary border border-primary/30'
-                            : 'bg-white/5 text-textMuted border border-white/10'
-                        }`}
-                      >
-                        {chord}
-                      </span>
-                    ))}
+                    {prog.chords.map((chord, chordIdx) => {
+                      const isBeating = isThisBeat && currentChordIdx === chordIdx;
+                      const isSelected = chordDetail?.symbol === chord;
+                      return (
+                        <button
+                          key={chordIdx}
+                          onClick={(e) => { e.stopPropagation(); handleChordClick(chord); }}
+                          className={`px-3 py-1 rounded-full text-sm font-bold transition-all duration-100 ${
+                            isBeating
+                              ? 'bg-primary text-black scale-110'
+                              : isSelected
+                              ? 'bg-white text-black'
+                              : isActive
+                              ? 'bg-primary/20 text-primary border border-primary/30 hover:bg-primary/40'
+                              : 'bg-white/5 text-textMuted border border-white/10 hover:border-white/40 hover:text-white'
+                          }`}
+                        >
+                          {chord}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               );
@@ -350,6 +376,69 @@ export const ProgressionsPage = () => {
         )}
 
       </div>
+
+      {/* Chord detail slide-up panel */}
+      {chordDetail && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-surface border-t border-white/10 shadow-2xl animate-slide-up">
+          <div className="max-w-3xl mx-auto px-4 py-5 space-y-4">
+
+            {/* Header row */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <h2 className="font-display font-bold text-2xl text-primary">{chordDetail.symbol}</h2>
+                <span className="text-xs text-textMuted uppercase tracking-widest font-bold">{chordDetail.quality}</span>
+                <div className="flex gap-2">
+                  {chordDetail.notes.map((note) => (
+                    <span key={note} className="px-2 py-0.5 rounded bg-white/10 text-sm font-bold">{note}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Piano / Guitar toggle */}
+                <div className="flex rounded-full border border-white/20 overflow-hidden text-sm font-bold">
+                  <button
+                    onClick={() => setDetailView('piano')}
+                    className={`px-4 py-1.5 transition-colors ${detailView === 'piano' ? 'bg-primary text-black' : 'text-textMuted hover:text-white'}`}
+                  >
+                    Piano
+                  </button>
+                  <button
+                    onClick={() => setDetailView('guitar')}
+                    className={`px-4 py-1.5 transition-colors ${detailView === 'guitar' ? 'bg-primary text-black' : 'text-textMuted hover:text-white'}`}
+                  >
+                    Guitar
+                  </button>
+                </div>
+                <button
+                  onClick={() => setChordDetail(null)}
+                  className="w-8 h-8 rounded-full border border-white/20 hover:bg-white/10 flex items-center justify-center text-textMuted hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Visualizer */}
+            <div className="overflow-x-auto">
+              {detailView === 'piano' ? (
+                <PianoKeyboard
+                  highlightedNotes={chordDetail.notes}
+                  onKeyClick={() => {}}
+                  zoom={0.38}
+                />
+              ) : (
+                <Fretboard
+                  highlightedNotes={chordDetail.notes}
+                  onFretClick={() => {}}
+                  zoom={0.55}
+                />
+              )}
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

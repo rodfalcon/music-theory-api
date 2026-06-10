@@ -1,6 +1,6 @@
 # NoteFlow — Music Theory Explorer
 
-A music theory engine with a visual frontend, event streaming, and full observability. Built as a portfolio project across a modern stack — no LLM wrappers, no shortcuts.
+A music theory engine with a visual frontend and event streaming. Built as a portfolio project across a modern stack — no shortcuts.
 
 Every scale recommendation, every interval calculation, every chord parse is done by hand-written Java logic. The music theory is **encoded into the software**.
 
@@ -20,6 +20,12 @@ Every scale recommendation, every interval calculation, every chord parse is don
 
 ![Piano keyboard](docs/screenshot-piano.png)
 
+**Chord progressions** — pick a key and mode, play any progression, click a chord to see it on guitar or piano
+
+![Chord progressions — guitar view](images/progressions-guitar.png)
+
+![Chord progressions — piano view](images/progressions-piano.png)
+
 ---
 
 ## Stack
@@ -31,8 +37,8 @@ Every scale recommendation, every interval calculation, every chord parse is don
 | Frontend | React + Tailwind, served via nginx |
 | Event streaming | Apache Kafka 3.7 (KRaft mode, no Zookeeper) |
 | Observability | Datadog APM + distributed tracing + structured JSON logs |
-| Runtime | Kubernetes (colima) — 3 deployments: backend, frontend, kafka |
 | Container | Docker multi-stage build |
+| Cloud | AWS ECS Fargate + RDS + CloudFront |
 
 ---
 
@@ -44,18 +50,18 @@ Browser
 React frontend (NoteFlow UI)
   ↓ HTTP
 Spring Boot API  (:8081)
-  ├── MusicTheoryController   (@RestController, /api/*)
-  ├── MusicTheoryService      (orchestrates engine)
-  ├── ChordParser             (regex → Chord model)
+  ├── MusicTheoryController        (@RestController, /api/*)
+  ├── ChordProgressionController   (@RestController, /api/progressions/*)
+  ├── MusicTheoryService
+  ├── ChordProgressionService
+  ├── ChordParser                  (regex → Chord model)
   ├── ScaleRecommendationEngine
-  └── NoteEventProducer       (publishes to Kafka on each request)
+  └── NoteEventProducer            (publishes to Kafka on each request)
         ↓
       Kafka  (note-events topic)
         ↓
-      NoteEventConsumer       (@KafkaListener — logs partition + offset)
+      NoteEventConsumer            (@KafkaListener)
 ```
-
-Datadog APM auto-instruments HTTP spans and the Kafka producer/consumer via the `dd-java-agent`, with trace-log correlation and service map showing `music-theory-api → kafka`.
 
 ---
 
@@ -66,62 +72,99 @@ Datadog APM auto-instruments HTTP spans and the Kafka producer/consumer via the 
 | `GET` | `/api/chords/{symbol}` | Parse a chord symbol, return notes. e.g. `Dm7` |
 | `GET` | `/api/scale/{root}/{type}` | Get a single scale. e.g. `C/ionian` |
 | `GET` | `/api/scales/{root}/{type}` | Get all compatible scales for a chord |
-| `GET` | `/api/keys/{key}` | Get all notes in a major key. e.g. `G` |
+| `GET` | `/api/keys/{key}` | Get all notes in a major key |
 | `POST` | `/api/improvise` | Given a chord, return compatible scales for improvisation |
+| `GET` | `/api/progressions?key=C&mode=major` | Get diatonic chord progressions for a key |
+| `GET` | `/api/progressions/chord/{symbol}` | Get the notes that make up a chord |
 
-Every `/api/scale` and `/api/chords` request publishes a `NoteEvent` to the `note-events` Kafka topic.
+---
 
-### Example requests
+## Running locally
+
+### Prerequisites
+
+- Java 21+
+- Maven 3.9+
+- Node.js 18+
+- PostgreSQL 14+ running on `localhost:5432`
+
+### 1. Start the backend
 
 ```bash
-# What notes are in a Dm7 chord?
-curl http://localhost:8081/api/chords/Dm7
+# Create the database (run once)
+psql -U postgres -c "CREATE USER noteflow WITH PASSWORD 'noteflow';"
+psql -U postgres -c "CREATE DATABASE noteflow OWNER noteflow;"
 
-# C Ionian scale
-curl http://localhost:8081/api/scale/C/ionian
+# Start the API — Kafka listener is disabled in the local profile
+SPRING_PROFILES_ACTIVE=local mvn spring-boot:run
+```
 
-# What can I improvise over Am7?
-curl -X POST http://localhost:8081/api/improvise \
-  -H "Content-Type: application/json" \
-  -d '{"chordSymbol": "Am7"}'
+The API will be available at `http://localhost:8081`.
+
+### 2. Start the frontend
+
+```bash
+cd music_streaming-entertainment-modern_react
+npm install
+npm start
+```
+
+Open `http://localhost:3000`. The dev server proxies `/api/` calls to the backend automatically.
+
+---
+
+## Running with Docker (optional)
+
+**Mac (Docker Desktop):** Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), make sure it's running, then:
+
+**Mac (Colima):** Run `colima start` first, then the same commands below.
+
+**Linux:** Install Docker Engine, then the same commands below. No extra steps.
+
+**Windows:** Install Docker Desktop with the WSL2 backend. Run all commands inside a WSL2 terminal.
+
+```bash
+# Build both images
+docker build -t music-theory-api:0.1.0 .
+docker build -t music-theory-ui:0.1.0 ./music_streaming-entertainment-modern_react
+
+# Start everything
+docker compose up
+```
+
+Open `http://localhost:3000`.
+
+```bash
+# Stop
+docker compose down
 ```
 
 ---
 
-## Running locally (Kubernetes via colima)
+## Running on Kubernetes (optional)
 
-**Prerequisites:** Docker, colima, kubectl
+**Prerequisites:** colima with Kubernetes enabled, kubectl
 
 ```bash
 # Start colima with Kubernetes
 colima start --kubernetes
 
-# Build and load backend image
+# Build images and load them into the cluster
 docker build -t music-theory-api:0.1.0 .
 docker save music-theory-api:0.1.0 | colima ssh -- sudo ctr -n k8s.io images import /dev/stdin
 
-# Pull and load Kafka image
-docker pull apache/kafka:3.7.0
-docker save apache/kafka:3.7.0 | colima ssh -- sudo ctr -n k8s.io images import /dev/stdin
+docker build -t music-theory-ui:0.1.0 ./music_streaming-entertainment-modern_react
+docker save music-theory-ui:0.1.0 | colima ssh -- sudo ctr -n k8s.io images import /dev/stdin
 
-# Deploy everything
+# Deploy
+kubectl config use-context colima
 kubectl apply -f k8s/
 
-# Port-forward to access locally
-kubectl port-forward svc/music-theory-api 8081:8081 -n music-theory --context colima
-kubectl port-forward svc/frontend 3000:80 -n music-theory --context colima
+# Access the app
+kubectl port-forward svc/frontend 3000:80 -n music-theory
 ```
 
----
-
-## Roadmap
-
-| Phase | Status | Description |
-|-------|--------|-------------|
-| 1 — Engine + API | ✅ Done | Music theory engine, REST endpoints, Datadog APM |
-| 2 — Frontend | ✅ Done | React frontend — guitar fretboard + piano keyboard with scale degree colors |
-| 3 — Kafka + K8s | ✅ Done | Event streaming on every request, deployed on Kubernetes, DD service map |
-| 4 — AI Advisor | Planned | `POST /coach` — Claude as advisor on top of engine output |
+Open `http://localhost:3000`.
 
 ---
 
@@ -137,10 +180,10 @@ kubectl port-forward svc/frontend 3000:80 -n music-theory --context colima
 
 **`ScaleRecommendationEngine`** — generates all 84 possible scales (12 roots × 7 modes) and filters to those whose note set is a superset of the chord tones.
 
-**`NoteEvent`** — Java record DTO published to Kafka on every scale/chord request: `{type, root, scale, timestamp}`.
+**`ChordProgressionService`** — builds the 7 diatonic chords for any key and mode using semitone interval arrays, then assembles named progressions (I-IV-V-I, I-V-vi-IV, ii-V-I, I-vi-IV-V).
 
 ---
 
 ## UI color system
 
-Scale notes are color-coded by **scale degree** — the root is always red, the 2nd always orange, etc. — regardless of which string or octave you're playing on. The legend below the instrument shows which color maps to which note and degree. This helps beginners answer "where do I play next?" without memorising positions.
+Scale notes are color-coded by **scale degree** — the root is always red, the 2nd always orange, etc. — regardless of which string or octave you're playing on. This helps answer "where do I play next?" without memorising positions.

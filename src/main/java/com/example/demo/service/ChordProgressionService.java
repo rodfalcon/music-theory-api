@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import com.example.demo.model.ChordProgression;
 import com.example.demo.model.ProgressionEntry;
-
+import com.example.demo.model.ChordDetail;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,5 +70,48 @@ public class ChordProgressionService {
             }
         }      
         return root;
+    }
+    // Returns the three notes that make up a chord (root, third, fifth)
+    // and a human-readable quality label (Major / Minor / Diminished).
+    public ChordDetail getChordDetail(String chord) {
+        String root, quality, qualityLabel;
+
+        // Parse the chord suffix to identify root note and quality.
+        // "dim" suffix → diminished triad (e.g. "Bdim" → root="B", quality="dim")
+        // "m" suffix   → minor triad     (e.g. "Am"   → root="A", quality="m")
+        // no suffix    → major triad     (e.g. "C"    → root="C", quality="")
+        if (chord.endsWith("dim")) {
+            root = chord.substring(0, chord.length() - 3);
+            quality = "dim";
+            qualityLabel = "Diminished";
+        } else if (chord.endsWith("m")) {
+            root = chord.substring(0, chord.length() - 1);
+            quality = "m";
+            qualityLabel = "Minor";
+        } else {
+            root = chord;
+            quality = "";
+            qualityLabel = "Major";
+        }
+
+        // The third interval differs by quality:
+        //   Major: 4 semitones (major third)
+        //   Minor / Diminished: 3 semitones (minor third)
+        int third = quality.equals("") ? 4 : 3;
+
+        // The fifth interval differs only for diminished:
+        //   Perfect fifth: 7 semitones (major and minor)
+        //   Diminished fifth (tritone): 6 semitones
+        int fifth = quality.equals("dim") ? 6 : 7;
+
+        // Build the triad: root + third + fifth, all as plain note names (no octave)
+        // so they can be passed directly to PianoKeyboard and Fretboard as highlightedNotes.
+        List<String> notes = List.of(
+            root,
+            getNoteAtInterval(root, third),
+            getNoteAtInterval(root, fifth)
+        );
+
+        return new ChordDetail(chord, qualityLabel, notes);
     }
 }

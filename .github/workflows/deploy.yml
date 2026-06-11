@@ -87,13 +87,37 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Force new deployment
+      - name: Deploy backend with commit SHA as DD_VERSION
         run: |
+          SHORT_SHA="${{ github.sha }}"
+          SHORT_SHA="${SHORT_SHA:0:8}"
+
+          NEW_TASK_DEF=$(aws ecs describe-task-definition \
+            --task-definition $ECS_CLUSTER-backend \
+            --query taskDefinition \
+            --output json | jq 'del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy)' | \
+            jq --arg v "$SHORT_SHA" '
+              .containerDefinitions |= map(
+                if .name == "backend" then
+                  .environment |= map(if .name == "DD_VERSION" then .value = $v else . end)
+                else . end
+              )
+            ')
+
+          NEW_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "$NEW_TASK_DEF" \
+            --query taskDefinition.taskDefinitionArn \
+            --output text)
+
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
             --service $ECS_CLUSTER-backend \
+            --task-definition "$NEW_ARN" \
             --force-new-deployment \
             --query 'service.deployments[0].{status:status,failedTasks:failedTasks}'
+
+      - name: Deploy frontend
+        run: |
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
             --service $ECS_CLUSTER-frontend \

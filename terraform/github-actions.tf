@@ -80,6 +80,26 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       aws_ecs_service.frontend.id,
     ]
   }
+
+  statement {
+    sid    = "ECSTaskDef"
+    effect = "Allow"
+    actions = [
+      "ecs:DescribeTaskDefinition",
+      "ecs:RegisterTaskDefinition",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "IAMPassRole"
+    effect = "Allow"
+    actions = ["iam:PassRole"]
+    resources = [
+      aws_iam_role.task_execution.arn,
+      aws_iam_role.task.arn,
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "github_actions" {

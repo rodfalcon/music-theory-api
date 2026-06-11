@@ -63,6 +63,25 @@ resource "aws_iam_role_policy" "task_logs" {
   })
 }
 
+resource "aws_iam_role_policy" "task_exec_command" {
+  name = "ecs-exec"
+  role = aws_iam_role.task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "ssmmessages:CreateControlChannel",
+        "ssmmessages:CreateDataChannel",
+        "ssmmessages:OpenControlChannel",
+        "ssmmessages:OpenDataChannel",
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
 # --- CloudWatch Log Groups ---
 
 resource "aws_cloudwatch_log_group" "backend" {
@@ -158,6 +177,7 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "DD_VERSION", value = "0.1.0" },
         { name = "DD_LOGS_INJECTION", value = "true" },
         { name = "DD_PROFILING_ENABLED", value = "false" },
+        { name = "DD_DBM_PROPAGATION_MODE", value = "full" },
       ]
 
       secrets = [
@@ -197,14 +217,18 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "DD_APM_ENABLED", value = "true" },
         { name = "DD_LOGS_ENABLED", value = "true" },
         { name = "DD_DOGSTATSD_NON_LOCAL_TRAFFIC", value = "true" },
-        # DBM: agent connects directly to RDS
-        { name = "DD_DBM_PROPAGATION_MODE", value = "full" },
       ]
 
       secrets = [
-        { name = "DD_API_KEY", valueFrom = aws_ssm_parameter.dd_api_key.arn },
-        { name = "DD_CHECKS", valueFrom = aws_ssm_parameter.dd_checks.arn },
+        { name = "DD_API_KEY",            valueFrom = aws_ssm_parameter.dd_api_key.arn },
+        { name = "DD_POSTGRES_PASSWORD",  valueFrom = aws_ssm_parameter.datadog_password.arn },
       ]
+
+      dockerLabels = {
+        "com.datadoghq.ad.check_names"  = jsonencode(["postgres"])
+        "com.datadoghq.ad.init_configs" = jsonencode([{}])
+        "com.datadoghq.ad.instances"    = "[{\"host\":\"${aws_db_instance.main.address}\",\"port\":5432,\"username\":\"datadog\",\"password\":\"%%env_DD_POSTGRES_PASSWORD%%\",\"dbname\":\"noteflow\",\"dbm\":true,\"ssl\":\"require\",\"reported_hostname\":\"noteflow-postgres\",\"query_samples\":{\"enabled\":true},\"query_metrics\":{\"enabled\":true}}]"
+      }
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -276,11 +300,12 @@ resource "aws_ecs_task_definition" "frontend" {
 # --- ECS Services ---
 
 resource "aws_ecs_service" "backend" {
-  name            = "${local.name_prefix}-backend"
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.backend.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
+  name                   = "${local.name_prefix}-backend"
+  cluster                = aws_ecs_cluster.main.id
+  task_definition        = aws_ecs_task_definition.backend.arn
+  desired_count          = 1
+  launch_type            = "FARGATE"
+  enable_execute_command = true
 
   network_configuration {
     subnets          = data.aws_subnets.public.ids

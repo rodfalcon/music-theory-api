@@ -1,8 +1,10 @@
 # NoteFlow — Music Theory Explorer
 
-A music theory engine with a visual frontend and event streaming. Built as a portfolio project across a modern stack — no shortcuts.
+A music theory engine with a visual frontend and event streaming. Built as a portfolio project across a modern stack.
 
 Every scale recommendation, every interval calculation, every chord parse is done by hand-written Java logic. The music theory is **encoded into the software**.
+
+Frontend built in React — UI components developed with Claude Code. Based on the [Music Streaming Modern](https://freestacktemplates.io) template by FreeStackTemplates (MIT licence), rebranded and extended into NoteFlow.
 
 ---
 

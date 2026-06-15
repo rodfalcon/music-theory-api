@@ -34,6 +34,12 @@ variable "datadog_password" {
   sensitive   = true
 }
 
+variable "dd_app_key" {
+  description = "Datadog application key for the Datadog provider (Terraform)"
+  type        = string
+  sensitive   = true
+}
+
 variable "dd_version" {
   description = "Git commit SHA to use as DD_VERSION for Datadog unified service tagging"
   type        = string

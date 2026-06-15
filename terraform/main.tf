@@ -5,6 +5,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    datadog = {
+      source  = "DataDog/datadog"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -15,6 +19,11 @@ provider "aws" {
   default_tags {
     tags = local.common_tags
   }
+}
+
+provider "datadog" {
+  api_key = var.dd_api_key
+  app_key = var.dd_app_key
 }
 
 locals {

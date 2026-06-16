@@ -5,6 +5,35 @@ resource "aws_db_subnet_group" "main" {
   tags = { Name = "${local.name_prefix}-db" }
 }
 
+# Custom parameter group:
+# - force_ssl=0: allows non-SSL connections (static, needs reboot — already done)
+# - accepted_password_auth_method=md5: forces MD5 auth protocol instead of SCRAM.
+#   psycopg3's pure-Python SCRAM implementation fails against RDS (SCRAM-SHA-256-PLUS
+#   channel binding issue AND plain SCRAM-SHA-256 bugs in Python 3.13). MD5 auth is
+#   handled correctly by psycopg3. Dynamic parameter, applied immediately.
+resource "aws_db_parameter_group" "main" {
+  name   = "${local.name_prefix}-postgres16"
+  family = "postgres16"
+
+  parameter {
+    name         = "rds.force_ssl"
+    value        = "0"
+    apply_method = "pending-reboot"
+  }
+
+  parameter {
+    name         = "rds.accepted_password_auth_method"
+    value        = "md5+scram"
+    apply_method = "immediate"
+  }
+
+  parameter {
+    name         = "password_encryption"
+    value        = "md5"
+    apply_method = "immediate"
+  }
+}
+
 resource "aws_db_instance" "main" {
   identifier        = "${local.name_prefix}-postgres"
   engine            = "postgres"
@@ -19,6 +48,8 @@ resource "aws_db_instance" "main" {
 
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.rds.id]
+  parameter_group_name   = aws_db_parameter_group.main.name
+  apply_immediately      = true
 
   # Performance Insights required for DBM
   performance_insights_enabled = true

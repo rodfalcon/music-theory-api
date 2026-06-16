@@ -7,12 +7,17 @@
 #   "confused deputy" attacks — without it, anyone who knew the role ARN
 #   could assume it by pretending to be Datadog.
 #
-#   Order of events Terraform handles automatically:
-#   1. datadog_integration_aws_account is created → Datadog generates external_id
-#   2. IAM trust policy is built using that external_id
-#   3. IAM role is created with that trust policy
-#   4. Policies are attached to the role
+# Why dd_role_name is a local:
+#   datadog_integration_aws_account needs the role name to register the
+#   integration. aws_iam_role needs the external_id from
+#   datadog_integration_aws_account for the trust policy. If both reference
+#   each other's resource, Terraform reports a cycle. Using a local breaks
+#   the dependency — both resources read from the local instead of each other.
 # ---------------------------------------------------------------------------
+
+locals {
+  dd_role_name = "${local.name_prefix}-datadog-integration"
+}
 
 data "aws_iam_policy_document" "datadog_assume_role" {
   statement {
@@ -76,7 +81,7 @@ resource "aws_iam_policy" "datadog" {
 }
 
 resource "aws_iam_role" "datadog" {
-  name               = "${local.name_prefix}-datadog-integration"
+  name               = local.dd_role_name
   description        = "Role assumed by Datadog for AWS integration"
   assume_role_policy = data.aws_iam_policy_document.datadog_assume_role.json
   tags               = local.common_tags
@@ -126,7 +131,7 @@ resource "datadog_integration_aws_account" "main" {
 
   auth_config {
     aws_auth_config_role {
-      role_name = aws_iam_role.datadog.name
+      role_name = local.dd_role_name
     }
   }
 
@@ -140,6 +145,10 @@ resource "datadog_integration_aws_account" "main" {
       lambdas = [module.datadog_forwarder.datadog_forwarder_arn]
       sources = ["elbv2", "cloudfront"]
     }
+  }
+
+  traces_config {
+    xray_services {}
   }
 
   metrics_config {

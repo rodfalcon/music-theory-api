@@ -217,6 +217,7 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "DD_APM_ENABLED", value = "true" },
         { name = "DD_LOGS_ENABLED", value = "true" },
         { name = "DD_DOGSTATSD_NON_LOCAL_TRAFFIC", value = "true" },
+        { name = "PGSSLMODE", value = "disable" },
       ]
 
       secrets = [
@@ -227,7 +228,7 @@ resource "aws_ecs_task_definition" "backend" {
       dockerLabels = {
         "com.datadoghq.ad.check_names"  = jsonencode(["postgres"])
         "com.datadoghq.ad.init_configs" = jsonencode([{}])
-        "com.datadoghq.ad.instances"    = "[{\"host\":\"${aws_db_instance.main.address}\",\"port\":5432,\"username\":\"datadog\",\"password\":\"%%env_DD_POSTGRES_PASSWORD%%\",\"dbname\":\"noteflow\",\"dbm\":true,\"ssl\":\"require\",\"reported_hostname\":\"noteflow-postgres\",\"query_samples\":{\"enabled\":true},\"query_metrics\":{\"enabled\":true}}]"
+        "com.datadoghq.ad.instances"    = "[{\"host\":\"${aws_db_instance.main.address}\",\"port\":5432,\"username\":\"datadog\",\"password\":\"%%env_DD_POSTGRES_PASSWORD%%\",\"dbname\":\"noteflow\",\"dbm\":true,\"reported_hostname\":\"noteflow-postgres\",\"query_samples\":{\"enabled\":true},\"query_metrics\":{\"enabled\":true}}]"
       }
 
       logConfiguration = {

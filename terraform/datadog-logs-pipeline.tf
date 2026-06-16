@@ -3,7 +3,7 @@ resource "datadog_logs_custom_pipeline" "backend" {
   is_enabled = true
 
   filter {
-    query = "log_group:/ecs/rodrigo-falcao-noteflow/backend"
+    query = "@aws.cloudwatch.log_group:\"/ecs/rodrigo-falcao-noteflow/backend\""
   }
 
   processor {

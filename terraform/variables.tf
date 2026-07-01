@@ -4,12 +4,6 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "aws_profile" {
-  description = "AWS CLI profile to use"
-  type        = string
-  default     = ""
-}
-
 variable "dd_api_key" {
   description = "Datadog API key for the agent"
   type        = string

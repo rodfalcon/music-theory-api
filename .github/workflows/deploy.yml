@@ -44,7 +44,7 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "~1.5"
+          terraform_version: "~1.9"
 
       - name: Terraform init
         run: terraform init -backend-config="profile="

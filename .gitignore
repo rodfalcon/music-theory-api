@@ -40,8 +40,14 @@ build/
 terraform/.terraform/
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
+terraform/terraform.tfstate.*.backup
 terraform/*.tfvars.backup
+terraform/tfplan
 terraform/crash.log
+terraform/override.tf
+terraform/override.tf.json
+terraform/*_override.tf
+terraform/*_override.tf.json
 
 ### React frontend ###
 music_streaming-entertainment-modern_react/node_modules/

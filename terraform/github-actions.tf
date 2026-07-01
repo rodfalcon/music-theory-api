@@ -100,6 +100,33 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       aws_iam_role.task.arn,
     ]
   }
+
+  statement {
+    sid    = "TerraformState"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket",
+    ]
+    resources = [
+      "arn:aws:s3:::rodrigo-falcao-noteflow-tfstate",
+      "arn:aws:s3:::rodrigo-falcao-noteflow-tfstate/*",
+    ]
+  }
+
+  statement {
+    sid    = "TerraformSSM"
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter",
+      "ssm:PutParameter",
+    ]
+    resources = [
+      "arn:aws:ssm:us-east-1:659775407889:parameter/noteflow/*",
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "github_actions" {

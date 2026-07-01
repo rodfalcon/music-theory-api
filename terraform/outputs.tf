@@ -26,7 +26,7 @@ output "rds_endpoint" {
 output "push_commands" {
   description = "Commands to push images to ECR after terraform apply"
   value       = <<-EOT
-    aws ecr get-login-password --region ${var.aws_region} --profile ${var.aws_profile} | docker login --username AWS --password-stdin ${aws_ecr_repository.backend.repository_url}
+    aws ecr get-login-password --region ${var.aws_region} --profile rodrigo-falcao-sandbox | docker login --username AWS --password-stdin ${aws_ecr_repository.backend.repository_url}
     docker tag music-theory-api:0.1.0 ${aws_ecr_repository.backend.repository_url}:latest
     docker push ${aws_ecr_repository.backend.repository_url}:latest
     docker tag noteflow-frontend:latest ${aws_ecr_repository.frontend.repository_url}:latest

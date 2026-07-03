@@ -173,6 +173,7 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       "lambda:GetFunctionCodeSigningConfig",
       "lambda:GetPolicy",
       "lambda:ListTags",
+      "lambda:ListVersionsByFunction",
       # CloudFront
       "cloudfront:GetDistribution",
       "cloudfront:ListTagsForResource",

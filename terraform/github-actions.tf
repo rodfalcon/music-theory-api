@@ -102,6 +102,34 @@ data "aws_iam_policy_document" "github_actions_permissions" {
   }
 
   statement {
+    sid    = "TerraformWrite"
+    effect = "Allow"
+    actions = [
+      # RDS
+      "rds:ModifyDBParameterGroup",
+      "rds:ModifyDBInstance",
+      # SSM
+      "ssm:AddTagsToResource",
+      # Secrets Manager
+      "secretsmanager:PutSecretValue",
+      "secretsmanager:UpdateSecret",
+      # CloudWatch Logs
+      "logs:PutRetentionPolicy",
+      "logs:CreateLogGroup",
+      "logs:TagLogGroup",
+      "logs:TagResource",
+      # Lambda
+      "lambda:UpdateFunctionConfiguration",
+      "lambda:UpdateFunctionCode",
+      "lambda:TagResource",
+      # ECS
+      "ecs:UpdateCluster",
+      "ecs:TagResource",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
     sid    = "TerraformState"
     effect = "Allow"
     actions = [

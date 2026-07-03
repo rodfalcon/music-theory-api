@@ -135,9 +135,11 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       # EC2 / networking
       "ec2:DescribeAvailabilityZones",
       "ec2:DescribeVpcs",
+      "ec2:DescribeVpcAttribute",
       "ec2:DescribeSubnets",
       "ec2:DescribeSecurityGroups",
       "ec2:DescribeManagedPrefixLists",
+      "ec2:GetManagedPrefixListEntries",
       # IAM
       "iam:GetRole",
       "iam:GetPolicy",
@@ -170,6 +172,7 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       "logs:DescribeLogGroups",
       "logs:DescribeSubscriptionFilters",
       "logs:ListTagsLogGroup",
+      "logs:ListTagsForResource",
       # RDS
       "rds:DescribeDBInstances",
       "rds:DescribeDBSubnetGroups",
@@ -179,6 +182,7 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       # Secrets Manager
       "secretsmanager:DescribeSecret",
       "secretsmanager:GetResourcePolicy",
+      "secretsmanager:GetSecretValue",
       "secretsmanager:ListSecretVersionIds",
       # SSM (describe, not just get)
       "ssm:DescribeParameters",

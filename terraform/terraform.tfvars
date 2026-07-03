@@ -1,5 +1,4 @@
 aws_region   = "us-east-1"
-aws_profile  = "rodrigo-falcao-sandbox"
 dd_site      = "datadoghq.com"
 github_repo  = "rodfalcon/music-theory-api"
 # dd_api_key       = "set via TF_VAR_dd_api_key — never commit"

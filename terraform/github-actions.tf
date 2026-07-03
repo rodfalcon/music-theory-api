@@ -127,6 +127,70 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       "arn:aws:ssm:us-east-1:659775407889:parameter/noteflow/*",
     ]
   }
+
+  statement {
+    sid    = "TerraformRead"
+    effect = "Allow"
+    actions = [
+      # EC2 / networking
+      "ec2:DescribeAvailabilityZones",
+      "ec2:DescribeVpcs",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeManagedPrefixLists",
+      # IAM
+      "iam:GetRole",
+      "iam:GetPolicy",
+      "iam:GetPolicyVersion",
+      "iam:GetRolePolicy",
+      "iam:ListRolePolicies",
+      "iam:ListAttachedRolePolicies",
+      "iam:ListPolicyVersions",
+      "iam:GetOpenIDConnectProvider",
+      "iam:ListOpenIDConnectProviders",
+      # ECR
+      "ecr:DescribeRepositories",
+      "ecr:GetLifecyclePolicy",
+      "ecr:ListTagsForResource",
+      # ECS
+      "ecs:DescribeClusters",
+      "ecs:DescribeServices",
+      "ecs:DescribeTaskDefinition",
+      "ecs:ListTagsForResource",
+      # ALB / ELB
+      "elasticloadbalancing:DescribeLoadBalancers",
+      "elasticloadbalancing:DescribeListeners",
+      "elasticloadbalancing:DescribeRules",
+      "elasticloadbalancing:DescribeTargetGroups",
+      "elasticloadbalancing:DescribeTags",
+      # CloudFront
+      "cloudfront:GetDistribution",
+      "cloudfront:ListTagsForResource",
+      # CloudWatch Logs
+      "logs:DescribeLogGroups",
+      "logs:DescribeSubscriptionFilters",
+      "logs:ListTagsLogGroup",
+      # RDS
+      "rds:DescribeDBInstances",
+      "rds:DescribeDBSubnetGroups",
+      "rds:DescribeDBParameterGroups",
+      "rds:DescribeDBParameters",
+      "rds:ListTagsForResource",
+      # Secrets Manager
+      "secretsmanager:DescribeSecret",
+      "secretsmanager:GetResourcePolicy",
+      "secretsmanager:ListSecretVersionIds",
+      # SSM (describe, not just get)
+      "ssm:DescribeParameters",
+      "ssm:GetParameters",
+      "ssm:ListTagsForResource",
+      # S3 state bucket
+      "s3:GetBucketVersioning",
+      "s3:GetBucketPolicy",
+      "s3:GetEncryptionConfiguration",
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role_policy" "github_actions" {

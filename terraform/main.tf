@@ -5,7 +5,6 @@ terraform {
     bucket         = "rodrigo-falcao-noteflow-tfstate"
     key            = "noteflow/terraform.tfstate"
     region         = "us-east-1"
-    profile        = "rodrigo-falcao-sandbox"
     use_lockfile   = true
     encrypt        = true
   }

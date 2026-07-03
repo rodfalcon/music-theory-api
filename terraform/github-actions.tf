@@ -161,10 +161,18 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       "ecs:ListTagsForResource",
       # ALB / ELB
       "elasticloadbalancing:DescribeLoadBalancers",
+      "elasticloadbalancing:DescribeLoadBalancerAttributes",
       "elasticloadbalancing:DescribeListeners",
+      "elasticloadbalancing:DescribeListenerAttributes",
       "elasticloadbalancing:DescribeRules",
       "elasticloadbalancing:DescribeTargetGroups",
+      "elasticloadbalancing:DescribeTargetGroupAttributes",
       "elasticloadbalancing:DescribeTags",
+      # Lambda
+      "lambda:GetFunction",
+      "lambda:GetFunctionCodeSigningConfig",
+      "lambda:GetPolicy",
+      "lambda:ListTags",
       # CloudFront
       "cloudfront:GetDistribution",
       "cloudfront:ListTagsForResource",
